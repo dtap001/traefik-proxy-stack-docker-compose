@@ -10,13 +10,7 @@ x-common-keys: &common-keys
         cpus: '0.25'
         memory: 200M
 
-x-environment: &default-tz-puid-pgid
-  TZ: ${TZ}
-  PUID: ${PUID}
-  PGID: ${PGID}
-
 services:
-
   traefik:
     image: traefik:v3.0
     <<: *common-keys
@@ -24,7 +18,11 @@ services:
       - 80:80
       - 443:443
     environment:
-      CF_DNS_API_TOKEN: ${TRAEFIK_PROXY_CLOUDFLARE_TOKEN} 
+      CF_DNS_API_TOKEN: ${TRAEFIK_PROXY_CLOUDFLARE_TOKEN}
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
