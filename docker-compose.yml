@@ -1,0 +1,47 @@
+x-common-keys: &common-keys
+  restart: unless-stopped
+  security_opt:
+      - no-new-privileges:true
+  networks:
+    - ${TRAEFIK_PROXY_NETWORK}
+  deploy:
+    resources:
+      limits:
+        cpus: '0.25'
+        memory: 200M
+
+x-environment: &default-tz-puid-pgid
+  TZ: ${TZ}
+  PUID: ${PUID}
+  PGID: ${PGID}
+
+services:
+
+  traefik:
+    image: traefik:v3.0
+    <<: *common-keys
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      CF_DNS_API_TOKEN: ${TRAEFIK_PROXY_CLOUDFLARE_TOKEN} 
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./appdata/traefik/traefik.yaml:/etc/traefik/traefik.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_PROXY_DASHBOARD_DOMAIN}`)"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_PROXY_DASHBOARD_BASE64_CREDENTIALS}"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`${TRAEFIK_PROXY_DASHBOARD_DOMAIN}`)"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=${TRAEFIK_PROXY_TLD}"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.${TRAEFIK_PROXY_TLD}"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
