@@ -3,7 +3,7 @@ x-common-keys: &common-keys
   security_opt:
       - no-new-privileges:true
   networks:
-    -traefik-proxy-network:
+    - traefik-proxy-network
   deploy:
     resources:
       limits:
