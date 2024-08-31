@@ -3,7 +3,7 @@ x-common-keys: &common-keys
   security_opt:
       - no-new-privileges:true
   networks:
-    - ${TRAEFIK_PROXY_NETWORK}
+    -traefik-proxy-network:
   deploy:
     resources:
       limits:
@@ -47,4 +47,4 @@ services:
       - "traefik.http.routers.traefik-secure.service=api@internal"
 
 networks:
-  ${TRAEFIK_PROXY_NETWORK}:
+  traefik-proxy-network:
