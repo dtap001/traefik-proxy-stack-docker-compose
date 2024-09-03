@@ -1,7 +1,5 @@
 x-common-keys: &common-keys
   restart: unless-stopped
-  security_opt:
-      - no-new-privileges:true
   networks:
     - traefik-proxy-network
   deploy:
